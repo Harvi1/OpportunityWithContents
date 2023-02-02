@@ -1,48 +1,64 @@
 <template>
-    <lightning-card title="Show Content Records" icon-name="standard:account">
-        <div if:true={isLoading}>
-            <lightning-spinner alternative-text="Loading..." variant="brand" class="slds-is-fixed">
-            </lightning-spinner>
+    <lightning-card title="Content Records Lwc">
+        <template if:true={IsLoading}>
+            <lightning-spinner variant="brand" alternative-text="Loading..."></lightning-spinner>
+        </template>
+        <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_12-of-12 slds-p-vertical_small">
+                <lightning-input label="Search" onchange={handleSearchchange}></lightning-input>
+            </div>
         </div>
-        <div class="slds-m-around_medium">
-            <lightning-layout multiple-rows>
-                <lightning-layout-item size="12" padding="around-small">
-                    <lightning-Input type="search" placeholder="Search..." value={stagename} name="stagename"
-                        class="stagename" onchange={handlechangeStagename}></lightning-input>
-                    <lightning-button label="Search Stage Name" size="small" variant="brand"
-                        onclick={handleStageNameSearch} icon-name="utility:search"
-                        icon-position="right"></lightning-button>
-                    <h2>Content StageName :- <span><strong>{currentStageName}</strong></span></h2><br />
-                </lightning-layout-item>
-            </lightning-layout>
-            <template if:true={records}>
-                <table class="slds-table slds-table_cell-buffer slds-table_bordered" border="1" cellspacing="0"
-                    cellpadding="0" style="border-collapse:collapse;">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Stage Name</th>
+        <template if:true={records}>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="Table1">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Stage Name</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={records} for:item="conItem">
+                        <tr key={conItem.Id}>
+                            <td>{conItem.Name}</td>
+                            <td>{conItem.StageName__c}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <template for:each={records} for:item="conItem">
-                            <tr key={conItem.Id}>
-                                <td>{conItem.Name}</td>
-                                <td>{conItem.StageName__c}</td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </template>
-            <template if:true={data}>
-                <lightning-datatable key-field="Id" data={data} columns={columns} hide-checkbox-column="true"
-                    show-row-number-column="true" onrowaction={handleRowAction}>
-                </lightning-datatable>
-            </template>
-            <template if:true={error}>
-                {error}>
-            </template>
-        </div>
-    </lightning-card>
+                    </template>
+                </tbody>
+            </table>
+        </template>
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="Table2">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="Phone"> Content Name</div>
+                    </th>
+                    <th class="" scope="col">
+                        <div class="slds-truncate" title="select">Stage Name</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={Contentdata} for:item="conData">
+                    <tr class="slds-hint-parent" key={conData.Id}>
+                        <th data-label="Name" scope="row">
+                            <div class="slds-truncate">{conData.Name}</div>
+                        </th>
+                        <td data-label="Rating">
+                            <div class="slds-truncate"><a>{conData.StageName__c}</a></div>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
 
+        <div class="slds-m-around_medium">
+            <p>Status : {oppstage}</p>
+        </div>
+        <!-- <template if:true={isDisplayNoRecords}>
+            <div class="slds-align_absolute-center">
+                <br/>
+                No records found
+            </div>
+        </template> -->
+    </lightning-card>
 </template>

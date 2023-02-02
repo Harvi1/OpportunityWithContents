@@ -1,38 +1,79 @@
-import { LightningElement, api, track, wire } from 'lwc';
-import getoppwithcontentdata from '@salesforce/apex/OpportunityWithContents.getoppwithContentdata';
-import retrieveContent from '@salesforce/apex/ShowbasedonsearchContentStageName.retrieveContent';
-import { getRecord } from 'lightning/uiRecordApi';
+import { LightningElement,api,track,wire } from 'lwc';
+import { subscribe, onError } from 'lightning/empApi';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
-const FIELDS = ['Opportunity.Id', 'Opportunity.Name', 'Opportunity.StageName'];
+import getcontactdata from '@salesforce/apex/OpportunityWithContents.getcontentdata';
+import updatecontentData from '@salesforce/apex/OpportunityWithContents.updatecontentData';
+import retrieveContent from '@salesforce/apex/ShowbasedonsearchContentStageName.retrieveContent';
 
-const columns = [
-    { label: 'Name', fieldName: 'Name' },
-    { label: 'StageName', fieldName: 'StageName__c' },
-];
-export default class ContentsRecordsLwcClone extends LightningElement {
+export default class ContentsRecordsLwc extends LightningElement {
     @api recordId;
-    @track opportunity;
-    @track Contentdata = [];
-    @track data;
-    @track error;
-    @track currentStageName;
+    @track oppstage;
+    @track message;
     @track searchStageName;
-    @track columns = columns;
-    @track searchString;
-    @track initialRecords;
-
-    handlechangeStagename(event) {
-        this.currentStageName = event.target.value;
-        console.log('currentStageName.......' + event.target.value);
-    }
-    handleStageNameSearch() {
-        console.log('searchStageName.......' + JSON.stringify(this.searchStageName));
-        this.searchStageName = this.currentStageName;
-    }
+    @track IsLoading = false;
     @track records;
-    @track dataNotFound;
 
-    @wire(retrieveContent, { keySearch: '$searchStageName' })
+    handleSearchchange(event) {
+        this.searchStageName = event.target.value;
+    }
+
+    subscription = {};
+    @api channelName = '/event/Content_Event__e';
+
+    @track Contentdata = [];
+    @track updatedcontentdata = [];
+    @track setContentdata = [];
+    @track opportunity =  [];
+    error;
+    @track serachkey = '';
+
+    connectedCallback(){
+        console.log('recordId-->'+this.recordId);
+        this.registerErrorListener();
+        this.handleSubscribe();
+    }
+    /*handleSearchchange(event){
+        this.serachkey = event.target.value;
+        const searchString = event.target.value;
+        window.clearTimeout(this.delayTimeout);
+        this.delayTimeout = setTimeout(() => {
+            this.serachkey = searchString;
+     },2000);
+        console.log('this.serachkey-->>'+this.serachkey);
+    }*/
+
+    @wire(getcontactdata,{recordId :'$recordId'})
+    wiredContentData({ error, data }) {
+        console.log('wire method called!!');
+            if (data) {
+                console.log('wire method called!!');
+                this.Contentdata = data;
+                this.IsLoading = false;
+                console.log('this.Contentdata-->>'+JSON.stringify(this.Contentdata));
+                this.serachkey = '';
+                this.error = undefined;
+            } else if (error) {
+                this.error = error;
+                this.Contentdata = undefined;
+            }     
+    } 
+    @wire(updatecontentData,{oppStage:'$oppstage'})
+    updatedwiredContentData({ error, data }) {
+        this.IsLoading = true;
+        console.log('this.IsLoading-->>'+this.IsLoading);
+            if (data) {
+                console.log('wire method called!!');
+                this.Contentdata = data;
+                this.IsLoading = false;
+                console.log('this.updatedcontentdata-->>'+JSON.stringify(this.Contentdata));
+                this.error = undefined;
+            } else if (error) {
+                this.error = error;
+                this.Contentdata = undefined;
+            }     
+    }
+     @wire(retrieveContent, { keySearch: '$searchStageName' })
     wireRecord({ data, error }) {
         if (data) {
             this.records = data;
@@ -47,64 +88,43 @@ export default class ContentsRecordsLwcClone extends LightningElement {
             this.data = undefined;
         }
     }
+    handleSubscribe() {
+        console.log('handleSubscribe method called');
+        const self = this;
+        const messageCallback = function (response) {
+            console.log('New message received 1: ', JSON.stringify(response));
+            console.log('New message received 2: ', response);
+            var obj = response;
+            console.log(obj.data.payload);
+            console.log(obj.data.payload.Message__c);
+            console.log(self.channelName);
+            let objData = obj.data.payload;
+            self.message = objData.Message__c;
+            self.oppstage = objData.Status__c;
+            self.recordId = objData.RecordId__c;
+            //self.ShowToast('Techdicer Plaform Event', self.message, 'success', 'dismissable');
+        };
 
-    @wire(getRecord, { recordId: '$recordId', fields: FIELDS })
-    wiredOpportunityData({ data, error }) {
-        if (data) {
-            this.opportunity = data;
-            this.processRelatedObjects();
-            this.updateRecordView();
-            
-            console.log(this.opportunity);
-        } else if (error) {
-            console.error('ERROR => ', JSON.stringify(error)); // handle error properly
-        }
-    }
-    processRelatedObjects() {
-        console.log('processRelatedObjects for => ', JSON.stringify(this.opportunity));
-        console.log('Is refreshed???????');
-        return refreshApex(this.wiredContentData);
-
-
-        // further processing like refreshApex or calling another wire service
-    }
-
-    @wire(getoppwithcontentdata, { recordId: '$recordId' })
-    wiredContentData({ error, data }) {
-        if (data) {
-            console.log(data);
-            this.data = data;
-            this.initialRecords = data;
-            this.error = undefined;
-            this.updateRecordView();
-            this.checkprocessRelatedContents();
-        } else if (error) {
-            this.error = error;
-            this.data = undefined;
-        }
-    }
-    checkprocessRelatedContents() {
-        console.log('checkprocessRelatedContents content =>' + JSON.stringify(this.initialRecords));
-        console.log('check which data in data =>' + JSON.stringify(this.data));
-        console.log('Is it Again refrshed or not??????');
-        return refreshApex(this.initialRecords);
-    }
-      updateRecordView() {
-        console.log('inside refresh');
-        setTimeout(() => {
-            eval("$A.get('e.force:refreshView').fire();");
-        }, 100);
-    }   
-    /*handleClick() {
-        this.handleIsLoading(true);
-        retrieveContent({ recordId: this.recordId }).then(result => {
-            this.showToast('Success', result, 'Success', 'dismissable');
-            this.updateRecordView();
-        }).catch(error => {
-            this.showToast('Error updating or refreshing records', error.body.message, 'Error', 'dismissable');
-        }).finally(() => {
-            this.handleIsLoading(false);
+        // Invoke subscribe method of empApi. Pass reference to messageCallback
+        subscribe(this.channelName, -1, messageCallback).then(response => {
+            // Response contains the subscription information on subscribe call
+            console.log('Subscription request sent to: ', JSON.stringify(response.channel));
+            this.subscription = response;
         });
-    }*/
-
+    }
+      //handle Error
+      registerErrorListener() {
+        onError(error => {
+            console.log('Received error from server: ', JSON.stringify(error));
+        });
+    }
+    ShowToast(title, message, variant, mode) {
+        const evt = new ShowToastEvent({
+            title: title,
+            message: message,
+            variant: variant,
+            mode: mode
+        });
+        this.dispatchEvent(evt);
+    }
 }
