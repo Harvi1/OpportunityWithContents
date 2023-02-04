@@ -3,16 +3,64 @@
         <template if:true={IsLoading}>
             <lightning-spinner variant="brand" alternative-text="Loading..."></lightning-spinner>
         </template>
-        <div class="slds-grid slds-wrap">
-            <div class="slds-col slds-size_12-of-12 slds-p-vertical_small">
-                <lightning-input label="Search" onchange={handleSearchchange}></lightning-input>
+
+        <!-- <div class="slds-grid slds-wrap">
+            <div class="slds-col slds-size_4-of-12 slds-m-bottom--medium">
+                <lightning-Input type="search" placeholder="Search..." value={stageName} name="stageName"
+                    class="stageName" onchange={handleSearchchange}></lightning-input>
+            </div>
+        </div> -->
+        <div class="slds-is-relative">
+            <lightning-button-icon size="x-small" icon-name="utility:search" onclick={handleSearchclick}
+                alternative-text="search" title="Search" class="input-icon"></lightning-button-icon>
+            <div class="slds-col slds-size_4-of-12 slds-m-bottom--medium">
+                <lightning-input type="search" placeholder="Search TeamzSkill" value={stageName} name="stageName"
+                    class="icon-right" onchange={handleSearchchange}></lightning-input>
             </div>
         </div>
-        <template if:true={records}>
-            <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="Table1">
+
+        <!-- <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="Table1">
+            <thead>
+                <tr>
+                    <th>Content Name</th>
+                    <th>Stage Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={records} for:item="conItem">
+                    <tr key={conItem.Id}>
+                        <td>{conItem.Name}</td>
+                        <td>{conItem.StageName__c}</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table> -->
+
+        <!-- <div class="slds slds-p-horizontal--medium">
+            <div class="slds-grid slds-wrap">
+                <div class="slds-col slds-size_4-of-12 slds-m-bottom--medium">
+                    <lightning-Input type="search" placeholder="Search..." value={stageName} name="stageName"
+                        class="stageName" onchange={handlestageName}></lightning-input>
+                </div>
+                <div class="slds-col slds-size_6-of-12 slds-m-top--medium" style="margin-top: 19px; margin-left: 10px;">
+                    <lightning-button label="Search StageName" size="small" variant="brand"
+                        onclick={handleStageNameSearch} icon-name="utility:search"
+                        icon-position="right"></lightning-button>
+                </div>
+            </div>
+            <h2>Stage Name :- <span><strong>{currentStageName}</strong></span></h2><br />
+            <h3><strong><span style="color:brown;">{dataNotFound}</span></strong></h3><br />
+            <h2 class="slds-m-bottom--x-small" style="color:darkslateblue; font-weight:bold;">Displaying Contents
+                Records
+                based on
+                StageName
+            </h2>
+
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered" border="1" cellspacing="0"
+                cellpadding="0" style="border-collapse:collapse;">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Content Name</th>
                         <th>Stage Name</th>
                     </tr>
                 </thead>
@@ -25,7 +73,27 @@
                     </template>
                 </tbody>
             </table>
-        </template>
+
+        </div> -->
+        <!-- <template if:true={records}> -->
+        <!-- <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="Table1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Stage Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={records} for:item="conItem">
+                    <tr key={conItem.Id}>
+                        <td>{conItem.Name}</td>
+                        <td>{conItem.StageName__c}</td>
+                    </tr>
+                </template>
+            </tbody>
+        </table> -->
+        <!-- </template> -->
+
         <table class="slds-table slds-table_cell-buffer slds-table_bordered" id="Table2">
             <thead>
                 <tr class="slds-line-height_reset">
@@ -38,7 +106,7 @@
                 </tr>
             </thead>
             <tbody>
-                <template for:each={Contentdata} for:item="conData">
+                <template for:each={records} for:item="conData">
                     <tr class="slds-hint-parent" key={conData.Id}>
                         <th data-label="Name" scope="row">
                             <div class="slds-truncate">{conData.Name}</div>
@@ -51,9 +119,9 @@
             </tbody>
         </table>
 
-        <div class="slds-m-around_medium">
+        <!-- <div class="slds-m-around_medium">
             <p>Status : {oppstage}</p>
-        </div>
+        </div> -->
         <!-- <template if:true={isDisplayNoRecords}>
             <div class="slds-align_absolute-center">
                 <br/>
