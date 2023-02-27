@@ -1,0 +1,28 @@
+.input-icon {
+    position: absolute;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    width: 20px;
+    right: 1.5rem;
+}
+
+.my-round-button {
+    --sds-c-button-radius-border: 2rem;
+
+}
+
+.scrollContainer {
+    max-height: 150px;
+    overflow: auto;
+    position: relative;
+    border: 1px solid black;
+    border-style: hidden;
+}
+
+.scrollArea {
+    position: relative;
+}
